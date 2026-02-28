@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private Poker Night</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS VARIABLES & RESET --- */
+        :root {
+            --bg-color: #0a0a0a;
+            --card-bg: rgba(20, 20, 20, 0.85);
+            --gold: #d4af37;
+            --gold-dim: #aa8c2c;
+            --red: #800000;
+            --text-main: #f0f0f0;
+            --text-muted: #a0a0a0;
+            --font-heading: 'Playfair Display', serif;
+            --font-body: 'Roboto', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #000000 100%);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Subtle animated background pattern */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4af37' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.5;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* --- UTILITIES --- */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            width: 100%;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .fade-in {
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- PASSWORD OVERLAY --- */
+        #password-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        #password-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        input[type="password"] {
+            padding: 10px;
+            background: #222;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            font-family: var(--font-body);
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        /* --- HEADER / MUSIC TOGGLE --- */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            justify-content: flex-end;
+            z-index: 100;
+        }
+
+        .music-btn {
+            background: transparent;
+            border: 1px solid var(--gold-dim);
+            color: var(--gold);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .music-btn:hover {
+            background: rgba(212, 175, 55, 0.1);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+        }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding-top: 60px;
+        }
+
+        h1 {
+            font-family: var(--font-heading);
+            font-size: 3rem;
+            color: var(--gold);
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+            letter-spacing: 2px;
+        }
+
+        h2 {
+            font-family: var(--font-heading);
+            font-size: 2rem;
+            color: #fff;
+            margin-bottom: 40px;
+            font-weight: 400;
+        }
+
+        /* --- COUNTDOWN TIMER --- */
+        .countdown-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .time-box {
+            background: var(--card-bg);
+            border: 1px solid var(--gold);
+            padding: 15px 20px;
+            min-width: 80px;
+            border-radius: 4px;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .time-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        }
+
+        .time-val {
+            display: block;
+            font-size: 2.2rem;
+            font-family: var(--font-heading);
+            color: var(--gold);
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .time-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        /* --- DETAILS SECTION --- */
+        .details-section {
+            background: var(--card-bg);
+            border-top: 2px solid var(--red);
+            border-bottom: 2px solid var(--red);
+            padding: 60px 20px;
+            margin: 40px 0;
+            text-align: center;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .detail-item h3 {
+            color: var(--gold);
+            font-family: var(--font-heading);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .detail-item p {
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .btn-gold {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 30px;
+            background: linear-gradient(45deg, var(--gold-dim), var(--gold));
+            color: #000;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4);
+        }
+
+        /* --- RSVP SECTION --- */
+        .rsvp-section {
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .rsvp-section h2 {
+            color: var(--gold);
+            margin-bottom: 30px;
+        }
+
+        .rsvp-form {
+            max-width: 500px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .rsvp-form input,
+        .rsvp-form select {
+            padding: 15px;
+            background: rgba(30, 30, 30, 0.9);
+            border: 1px solid #333;
+            color: #fff;
+            font-size: 1rem;
+            border-radius: 4px;
+            font-family: var(--font-body);
+        }
+
+        .rsvp-form input:focus,
+        .rsvp-form select:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+
+        .rsvp-form select {
+            cursor: pointer;
+        }
+
+        .submit-btn {
+            padding: 15px;
+            background: var(--red);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .submit-btn:hover {
+            background: #a00000;
+            box-shadow: 0 0 20px rgba(128, 0, 0, 0.4);
+        }
+
+        .confirmation-msg {
+            display: none;
+            padding: 20px;
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            margin-top: auto;
+            padding: 30px;
+            text-align: center;
+            color: #555;
+            font-size: 0.9rem;
+            border-top: 1px solid #1a1a1a;
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .countdown-container {
+                gap: 10px;
+            }
+
+            .time-box {
+                min-width: 70px;
+                padding: 12px 10px;
+            }
+
+            .time-val {
+                font-size: 1.8rem;
+            }
+
+            .time-label {
+                font-size: 0.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Password Protection -->
+    <div id="password-overlay">
+        <h1 style="color: var(--gold); font-family: var(--font-heading); margin-bottom: 20px;">♠ Private Poker Night ♦</h1>
+        <p style="color: var(--text-muted); margin-bottom: 20px;">Enter the password to access the invitation</p>
+        <div id="password-input-group">
+            <input type="password" id="password-input" placeholder="Enter password" />
+            <button class="btn-gold" onclick="checkPassword()">Enter</button>
+        </div>
+        <p id="password-error" style="color: var(--red); margin-top: 15px; display: none;">Incorrect password. Try again.</p>
+    </div>
+
+    <!-- Header with Music Toggle -->
+    <header>
+        <button class="music-btn" id="music-toggle" onclick="toggleMusic()">
+            <span>♫</span> <span id="music-text">Play Music</span>
+        </button>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main-content" class="hidden">
+        <!-- Hero Section with Countdown -->
+        <section class="hero">
+            <div class="container fade-in">
+                <h1>You're Invited</h1>
+                <h2>Private Poker Night</h2>
+
+                <!-- COUNTDOWN TIMER -->
+                <div class="countdown-container" id="countdown">
+                    <div class="time-box">
+                        <span class="time-val" id="days">00</span>
+                        <span class="time-label">Days</span>
+                    </div>
+                    <div class="time-box">
+                        <span class="time-val" id="hours">00</span>
+                        <span class="time-label">Hours</span>
+                    </div>
+                    <div class="time-box">
+                        <span class="time-val" id="minutes">00</span>
+                        <span class="time-label">Minutes</span>
+                    </div>
+                    <div class="time-box">
+                        <span class="time-val" id="seconds">00</span>
+                        <span class="time-label">Seconds</span>
+                    </div>
+                </div>
+
+                <p style="color: var(--text-muted); margin-top: 20px; font-size: 1.1rem;">
+                    March 1st, 2026 at Midnight
+                </p>
+            </div>
+        </section>
+
+        <!-- Event Details Section -->
+        <section class="details-section">
+            <div class="container">
+                <div class="details-grid fade-in">
+                    <div class="detail-item">
+                        <h3>📅 Date &amp; Time</h3>
+                        <p>March 1st, 2026<br>00:00 (Midnight)</p>
+                    </div>
+                    <div class="detail-item">
+                        <h3>📍 Location</h3>
+                        <p>The Grand Casino Suite</p>
+                        <a href="https://maps.app.goo.gl/PXoYG6cJwk5fGeQy5?g_st=ipc" target="_blank" rel="noopener noreferrer" class="btn-gold">View on Map</a>
+                    </div>
+                    <div class="detail-item">
+                        <h3>👔 Dress Code</h3>
+                        <p>Elegant / Smart Casual</p>
+                        <p style="font-size: 0.9rem; margin-top: 5px;">Jackets recommended</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RSVP Section -->
+        <section class="rsvp-section">
+            <div class="container fade-in">
+                <h2>RSVP</h2>
+                <form class="rsvp-form" id="rsvp-form" onsubmit="handleRSVP(event)">
+                    <input type="text" id="name" placeholder="Your Name" required>
+                    <select id="attendance" required>
+                        <option value="">Will you attend?</option>
+                        <option value="yes">Yes, I'll be there</option>
+                        <option value="no">No, I can't make it</option>
+                    </select>
+                    <button type="submit" class="submit-btn">Submit RSVP</button>
+                </form>
+                <div class="confirmation-msg" id="confirmation">
+                    <h3>✓ Thank you!</h3>
+                    <p>Your RSVP has been received. See you at the table!</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>♠ ♦ ♣ ♥ Private Poker Night © 2026 ♥ ♣ ♦ ♠</p>
+    </footer>
+
+    <!-- Hidden Audio Element -->
+    <audio id="bg-music" loop>
+        <source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=" type="audio/wav">
+    </audio>
+
+    <script>
+        // --- PASSWORD PROTECTION ---
+        const CORRECT_PASSWORD = "poker2026";
+
+        function checkPassword() {
+            const input = document.getElementById('password-input').value;
+            const errorMsg = document.getElementById('password-error');
+            const mainContent = document.getElementById('main-content');
+            const overlay = document.getElementById('password-overlay');
+
+            if (input === CORRECT_PASSWORD) {
+                overlay.classList.add('hidden');
+                mainContent.classList.remove('hidden');
+                startCountdown();
+            } else {
+                errorMsg.style.display = 'block';
+                document.getElementById('password-input').value = '';
+            }
+        }
+
+        // Allow pressing Enter to submit password
+        document.getElementById('password-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+
+        // --- COUNTDOWN TIMER ---
+        function startCountdown() {
+            const eventDate = new Date('March 1, 2026 00:00:00').getTime();
+
+            function updateCountdown() {
+                const now = new Date().getTime();
+                const distance = eventDate - now;
+
+                if (distance <= 0) {
+                    document.getElementById('days').textContent = '00';
+                    document.getElementById('hours').textContent = '00';
+                    document.getElementById('minutes').textContent = '00';
+                    document.getElementById('seconds').textContent = '00';
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                document.getElementById('days').textContent = String(days).padStart(2, '0');
+                document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+                document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+                document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+            }
+
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        }
+
+        // --- MUSIC TOGGLE ---
+        let musicPlaying = false;
+
+        function toggleMusic() {
+            const audio = document.getElementById('bg-music');
+            const musicText = document.getElementById('music-text');
+
+            if (musicPlaying) {
+                audio.pause();
+                musicText.textContent = 'Play Music';
+                musicPlaying = false;
+            } else {
+                audio.play().catch(function() {
+                    // Autoplay blocked by browser policy; user interaction required
+                });
+                musicText.textContent = 'Pause Music';
+                musicPlaying = true;
+            }
+        }
+
+        // --- RSVP FORM ---
+        function handleRSVP(event) {
+            event.preventDefault();
+            const name = document.getElementById('name').value.trim();
+            const attendance = document.getElementById('attendance').value;
+
+            if (!name || !attendance) return;
+
+            document.getElementById('rsvp-form').style.display = 'none';
+            const confirmation = document.getElementById('confirmation');
+            confirmation.style.display = 'block';
+        }
+    </script>
+
+</body>
+</html>
