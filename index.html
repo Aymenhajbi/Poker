@@ -522,4 +522,132 @@
                     </div>
                     <div class="time-box">
                         <span class="time-val" id="hours">00</span>
-                        <span class="time-label
+                        <span class="time-label">Hours</span>
+                    </div>
+                    <div class="time-box">
+                        <span class="time-val" id="minutes">00</span>
+                        <span class="time-label">Minutes</span>
+                    </div>
+                    <div class="time-box">
+                        <span class="time-val" id="seconds">00</span>
+                        <span class="time-label">Seconds</span>
+                    </div>
+                </div>
+
+                <p class="event-datetime">Friday, March 14, 2025 &middot; 8:00 PM</p>
+            </div>
+        </section>
+
+        <!-- Details Section -->
+        <section class="details-section">
+            <div class="details-grid">
+                <div class="detail-item">
+                    <h3>📍 Where</h3>
+                    <p>Location TBA<br>Address shared<br>with confirmed guests</p>
+                </div>
+                <div class="detail-item">
+                    <h3>🕗 When</h3>
+                    <p>Friday, March 14, 2025<br>Doors open at 8:00 PM<br>Play starts at 8:30 PM</p>
+                </div>
+                <div class="detail-item">
+                    <h3>🎲 What to Bring</h3>
+                    <p>Your poker face<br>Buy-in: €20<br>Good spirits &amp; good vibes</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- RSVP Section -->
+        <section class="rsvp-section">
+            <div class="container">
+                <h2>Reserve Your Seat</h2>
+                <form class="rsvp-form" onsubmit="submitRSVP(event)">
+                    <input type="text" placeholder="Your Name" required>
+                    <input type="email" placeholder="Your Email" required>
+                    <select>
+                        <option value="">Will you attend?</option>
+                        <option value="yes">Yes, I'll be there!</option>
+                        <option value="no">Regretfully can't make it</option>
+                        <option value="maybe">Maybe / Let me check</option>
+                    </select>
+                    <button type="submit" class="submit-btn">Confirm My Seat ♠</button>
+                </form>
+                <div class="confirmation-msg" id="confirmation-msg">
+                    <h3>✓ You're on the list!</h3>
+                    <p>See you at the table. Details will follow.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>♠ PRIVATE POKER NIGHT ♠</p>
+    </footer>
+
+    <!-- Background Music -->
+    <audio id="bg-music" loop>
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // ── Password Protection ──
+        function checkPassword() {
+            const input = document.getElementById('password-input').value;
+            if (input === 'poker2025') {
+                document.getElementById('password-overlay').style.display = 'none';
+                document.getElementById('main-content').classList.remove('hidden');
+            } else {
+                document.getElementById('password-error').style.display = 'block';
+                document.getElementById('password-input').value = '';
+                document.getElementById('password-input').focus();
+            }
+        }
+
+        // ── Music Toggle ──
+        let musicPlaying = false;
+        function toggleMusic() {
+            const audio = document.getElementById('bg-music');
+            const btn = document.getElementById('music-text');
+            if (musicPlaying) {
+                audio.pause();
+                btn.textContent = 'Play Music';
+            } else {
+                audio.play().catch(function() {});
+                btn.textContent = 'Pause Music';
+            }
+            musicPlaying = !musicPlaying;
+        }
+
+        // ── Countdown Timer ──
+        const eventDate = new Date('2025-03-14T20:00:00');
+        function updateCountdown() {
+            const now = new Date();
+            const diff = eventDate - now;
+            if (diff <= 0) {
+                document.getElementById('days').textContent = '00';
+                document.getElementById('hours').textContent = '00';
+                document.getElementById('minutes').textContent = '00';
+                document.getElementById('seconds').textContent = '00';
+                return;
+            }
+            const days    = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours   = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            document.getElementById('days').textContent    = String(days).padStart(2, '0');
+            document.getElementById('hours').textContent   = String(hours).padStart(2, '0');
+            document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+            document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+        }
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+
+        // ── RSVP Form ──
+        function submitRSVP(e) {
+            e.preventDefault();
+            e.target.style.display = 'none';
+            document.getElementById('confirmation-msg').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
